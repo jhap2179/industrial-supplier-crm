@@ -1,53 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Industrial Supplier CRM</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
 
 body{
-    font-family: Arial, sans-serif;
+    font-family:Arial,sans-serif;
     background:#f5f7fb;
-    margin:0;
     padding:20px;
-}
-
-.container{
-    max-width:1200px;
-    margin:auto;
 }
 
 .card{
     background:white;
     padding:20px;
     border-radius:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
     margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
 }
 
 input,select{
     padding:10px;
     margin:5px;
-    border:1px solid #ddd;
-    border-radius:5px;
 }
 
 button{
-    background:#4f46e5;
-    color:white;
-    border:none;
     padding:10px 15px;
-    border-radius:5px;
     cursor:pointer;
 }
 
-button:hover{
-    opacity:0.9;
+.hidden{
+    display:none;
 }
 
 table{
@@ -56,29 +44,8 @@ table{
 }
 
 th,td{
-    padding:12px;
-    border-bottom:1px solid #ddd;
-    text-align:left;
-}
-
-.metric{
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.1);
-    width:250px;
-}
-
-.hidden{
-    display:none;
-}
-
-.success{
-    color:green;
-}
-
-.error{
-    color:red;
+    border:1px solid #ddd;
+    padding:10px;
 }
 
 </style>
@@ -87,13 +54,9 @@ th,td{
 
 <body>
 
-<div class="container">
-
-<!-- LOGIN -->
-
 <div id="authCard" class="card">
 
-<h2>Industrial CRM Login</h2>
+<h2>Login / Signup</h2>
 
 <input
 type="email"
@@ -115,19 +78,15 @@ Sign Up
 Login
 </button>
 
-<div id="authMessage"></div>
-
 </div>
-
-<!-- CRM -->
 
 <div id="crmArea" class="hidden">
 
 <div class="card">
 
-<h2>Industrial Supplier CRM</h2>
+<h2>Industrial CRM</h2>
 
-<p id="loggedInUser"></p>
+<p id="userEmail"></p>
 
 <button onclick="logout()">
 Logout
@@ -135,74 +94,58 @@ Logout
 
 </div>
 
-<div class="metric">
-
-<h3>Total Leads</h3>
-
-<h1 id="leadCount">0</h1>
-
-</div>
-
-<br>
-
 <div class="card">
 
 <h3>Add Lead</h3>
 
 <input
 id="company"
-placeholder="Company Name">
+placeholder="Company">
 
 <input
 id="contact"
-placeholder="Contact Person">
+placeholder="Contact">
 
 <input
 id="phone"
-placeholder="Phone Number">
+placeholder="Phone">
 
 <select id="stage">
 
 <option>New Lead</option>
 <option>Contacted</option>
-<option>Requirement Received</option>
 <option>Quotation Sent</option>
-<option>Negotiation</option>
 <option>Won</option>
 <option>Lost</option>
 
 </select>
 
-<br>
-
 <button onclick="addLead()">
 Save Lead
 </button>
-
-<div id="saveMessage"></div>
 
 </div>
 
 <div class="card">
 
-<h3>Lead List</h3>
+<h3>Leads</h3>
 
 <table>
 
 <thead>
 
 <tr>
-<th>ID</th>
 <th>Company</th>
 <th>Contact</th>
 <th>Phone</th>
 <th>Stage</th>
-<th>Created</th>
 </tr>
 
 </thead>
 
-<tbody id="tbody"></tbody>
+<tbody id="tbody">
+
+</tbody>
 
 </table>
 
@@ -210,33 +153,33 @@ Save Lead
 
 </div>
 
-</div>
-
 <script>
 
-/************************************************
-SUPABASE CONFIG
-************************************************/
+/**************************************************
+SUPABASE
+**************************************************/
 
 const supabaseUrl =
 "https://fakvnhividjbqvjkalty.supabase.co";
 
 const supabaseKey =
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZha3ZuaGl2aWRqYnF2amthbHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NzM3NDAsImV4cCI6MjA5ODE0OTc0MH0.-IEpWTktiHY-mBhPUHB70XKQST3syyUnD4t8YfyOXyg";
+"YOUR_ANON_KEY_HERE";
 
-const supabase =
+const supabaseClient =
 window.supabase.createClient(
-supabaseUrl,
-supabaseKey
+    supabaseUrl,
+    supabaseKey
 );
 
-let leads = [];
+console.log("Supabase initialized");
 
-/************************************************
+/**************************************************
 SIGNUP
-************************************************/
+**************************************************/
 
 async function signUp(){
+
+try{
 
 const email =
 document.getElementById("email").value;
@@ -244,33 +187,50 @@ document.getElementById("email").value;
 const password =
 document.getElementById("password").value;
 
-const { error } =
-await supabase.auth.signUp({
+const { data,error } =
+await supabaseClient.auth.signUp({
 email,
 password
 });
 
 if(error){
 
-document.getElementById(
-"authMessage"
-).innerHTML =
-"<p class='error'>"+error.message+"</p>";
-
+alert(error.message);
 return;
 
 }
 
-document.getElementById(
-"authMessage"
-).innerHTML =
-"<p class='success'>Account created. Check email.</p>";
+if(data.user){
+
+await supabaseClient
+.from("profiles")
+.upsert([
+{
+id:data.user.id,
+email:data.user.email,
+role:"user"
+}
+]);
 
 }
 
-/************************************************
+alert(
+"Signup successful"
+);
+
+}catch(err){
+
+console.error(err);
+
+alert(err.message);
+
+}
+
+}
+
+/**************************************************
 LOGIN
-************************************************/
+**************************************************/
 
 async function signIn(){
 
@@ -281,7 +241,9 @@ const password =
 document.getElementById("password").value;
 
 const { error } =
-await supabase.auth.signInWithPassword({
+await supabaseClient
+.auth
+.signInWithPassword({
 
 email,
 password
@@ -290,96 +252,87 @@ password
 
 if(error){
 
-document.getElementById(
-"authMessage"
-).innerHTML =
-"<p class='error'>"+error.message+"</p>";
-
+alert(error.message);
 return;
 
 }
 
-checkAuth();
+checkSession();
 
 }
 
-/************************************************
+/**************************************************
 LOGOUT
-************************************************/
+**************************************************/
 
 async function logout(){
 
-await supabase.auth.signOut();
+await supabaseClient.auth.signOut();
 
 location.reload();
 
 }
 
-/************************************************
-AUTH CHECK
-************************************************/
+/**************************************************
+SESSION
+**************************************************/
 
-async function checkAuth(){
+async function checkSession(){
 
 const {
 data:{session}
-} =
-await supabase.auth.getSession();
+}
+=
+await supabaseClient
+.auth
+.getSession();
 
 if(session){
 
-document.getElementById(
-"authCard"
-).style.display="none";
+document
+.getElementById("authCard")
+.classList
+.add("hidden");
 
-document.getElementById(
-"crmArea"
-).classList.remove("hidden");
+document
+.getElementById("crmArea")
+.classList
+.remove("hidden");
 
-document.getElementById(
-"loggedInUser"
-).innerHTML =
-"Logged in as: " +
+document
+.getElementById("userEmail")
+.innerHTML =
 session.user.email;
 
 loadLeads();
 
-}else{
-
-document.getElementById(
-"authCard"
-).style.display="block";
-
-document.getElementById(
-"crmArea"
-).classList.add("hidden");
-
 }
 
 }
 
-/************************************************
+/**************************************************
 LOAD LEADS
-************************************************/
+**************************************************/
 
 async function loadLeads(){
 
 const {
 data:{user}
-} =
-await supabase.auth.getUser();
+}
+=
+await supabaseClient
+.auth
+.getUser();
 
 const {
 data,
 error
-} =
-await supabase
+}
+=
+await supabaseClient
 .from("leads")
 .select("*")
-.eq("owner_id",user.id)
-.order("id",{
-ascending:false
-});
+.eq("owner_id",user.id);
 
 if(error){
 
@@ -388,22 +341,15 @@ return;
 
 }
 
-leads = data || [];
-
-render();
+render(data);
 
 }
 
-/************************************************
+/**************************************************
 RENDER
-************************************************/
+**************************************************/
 
-function render(){
-
-document.getElementById(
-"leadCount"
-).innerText =
-leads.length;
+function render(leads){
 
 const tbody =
 document.getElementById(
@@ -412,18 +358,14 @@ document.getElementById(
 
 tbody.innerHTML = "";
 
-leads.forEach(lead=>{
+leads.forEach(l=>{
 
 tbody.innerHTML += `
 <tr>
-<td>${lead.id}</td>
-<td>${lead.company}</td>
-<td>${lead.contact}</td>
-<td>${lead.phone}</td>
-<td>${lead.stage}</td>
-<td>${new Date(
-lead.created_at
-).toLocaleString()}</td>
+<td>${l.company||''}</td>
+<td>${l.contact||''}</td>
+<td>${l.phone||''}</td>
+<td>${l.stage||''}</td>
 </tr>
 `;
 
@@ -431,9 +373,9 @@ lead.created_at
 
 }
 
-/************************************************
+/**************************************************
 ADD LEAD
-************************************************/
+**************************************************/
 
 async function addLead(){
 
@@ -459,11 +401,15 @@ document.getElementById(
 
 const {
 data:{user}
-} =
-await supabase.auth.getUser();
+}
+=
+await supabaseClient
+.auth
+.getUser();
 
-const { error } =
-await supabase
+const { error }
+=
+await supabaseClient
 .from("leads")
 .insert([
 {
@@ -477,43 +423,20 @@ owner_id:user.id
 
 if(error){
 
-document.getElementById(
-"saveMessage"
-).innerHTML =
-"<p class='error'>"+
-error.message+
-"</p>";
-
+alert(error.message);
 return;
 
 }
-
-document.getElementById(
-"saveMessage"
-).innerHTML =
-"<p class='success'>Lead Saved</p>";
-
-document.getElementById(
-"company"
-).value="";
-
-document.getElementById(
-"contact"
-).value="";
-
-document.getElementById(
-"phone"
-).value="";
 
 loadLeads();
 
 }
 
-/************************************************
+/**************************************************
 START
-************************************************/
+**************************************************/
 
-checkAuth();
+checkSession();
 
 </script>
 
