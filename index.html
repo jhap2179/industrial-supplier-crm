@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industrial Supplier CRM</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:20px;
+    background:#f5f7fb;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom:20px;
+}
+
+h1{
+    margin-bottom:20px;
+}
+
+input, select{
+    padding:10px;
+    margin:5px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+button{
+    padding:10px 15px;
+    border:none;
+    background:#4f46e5;
+    color:white;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th, td{
+    padding:12px;
+    border-bottom:1px solid #ddd;
+    text-align:left;
+}
+
+.dashboard{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.metric{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    min-width:220px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.metric h2{
+    margin:0;
+    font-size:32px;
+}
+
+.status{
+    margin-top:10px;
+    color:green;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Industrial Supplier CRM</h1>
+
+<div class="dashboard">
+    <div class="metric">
+        <p>Total Leads</p>
+        <h2 id="leadCount">0</h2>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Add Lead</h3>
+
+    <input id="company" placeholder="Company Name">
+
+    <input id="contact" placeholder="Contact Person">
+
+    <input id="phone" placeholder="Phone Number">
+
+    <select id="stage">
+        <option>New Lead</option>
+        <option>Contacted</option>
+        <option>Requirement Received</option>
+        <option>Quotation Sent</option>
+        <option>Negotiation</option>
+        <option>Won</option>
+        <option>Lost</option>
+    </select>
+
+    <button onclick="addLead()">
+        Save Lead
+    </button>
+
+    <div class="status" id="status"></div>
+</div>
+
+<div class="card">
+
+    <h3>Lead List</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Company</th>
+                <th>Contact</th>
+                <th>Phone</th>
+                <th>Stage</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+
+        <tbody id="tbody">
+
+        </tbody>
+
+    </table>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+/******************************************
+SUPABASE CONFIG
+******************************************/
+
+const supabaseUrl =
+'https://fakvnhividjbqvjkalty.supabase.co';
+
+const supabaseKey =
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZha3ZuaGl2aWRqYnF2amthbHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NzM3NDAsImV4cCI6MjA5ODE0OTc0MH0.-IEpWTktiHY-mBhPUHB70XKQST3syyUnD4t8YfyOXyg';
+
+const supabase =
+window.supabase.createClient(
+    supabaseUrl,
+    supabaseKey
+);
+
+let leads = [];
+
+/******************************************
+LOAD LEADS
+******************************************/
+
+async function loadLeads(){
+
+    const { data, error } =
+    await supabase
+        .from('leads')
+        .select('*')
+        .order('id', {
+            ascending:false
+        });
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    leads = data || [];
+
+    render();
+}
+
+/******************************************
+RENDER TABLE
+******************************************/
+
+function render(){
+
+    document.getElementById('leadCount')
+        .innerText = leads.length;
+
+    const tbody =
+        document.getElementById('tbody');
+
+    tbody.innerHTML = '';
+
+    leads.forEach(lead => {
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${lead.id}</td>
+            <td>${lead.company || ''}</td>
+            <td>${lead.contact || ''}</td>
+            <td>${lead.phone || ''}</td>
+            <td>${lead.stage || ''}</td>
+            <td>${lead.created_at ?
+                new Date(
+                lead.created_at
+                ).toLocaleString() : ''
+            }</td>
+        </tr>
+        `;
+    });
+
+}
+
+/******************************************
+ADD LEAD
+******************************************/
+
+async function addLead(){
+
+    const company =
+        document.getElementById(
+            'company'
+        ).value.trim();
+
+    const contact =
+        document.getElementById(
+            'contact'
+        ).value.trim();
+
+    const phone =
+        document.getElementById(
+            'phone'
+        ).value.trim();
+
+    const stage =
+        document.getElementById(
+            'stage'
+        ).value;
+
+    if(!company){
+        alert(
+          'Company name is required'
+        );
+        return;
+    }
+
+    const { error } =
+    await supabase
+        .from('leads')
+        .insert([
+            {
+                company,
+                contact,
+                phone,
+                stage
+            }
+        ]);
+
+    if(error){
+
+        document.getElementById(
+            'status'
+        ).innerHTML =
+        '❌ ' + error.message;
+
+        return;
+    }
+
+    document.getElementById(
+        'status'
+    ).innerHTML =
+    '✅ Lead Saved';
+
+    document.getElementById(
+        'company'
+    ).value = '';
+
+    document.getElementById(
+        'contact'
+    ).value = '';
+
+    document.getElementById(
+        'phone'
+    ).value = '';
+
+    await loadLeads();
+}
+
+/******************************************
+INITIAL LOAD
+******************************************/
+
+loadLeads();
+
+</script>
+
+</body>
+</html>
