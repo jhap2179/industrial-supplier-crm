@@ -1,444 +1,268 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Supplier CRM</title>
 
-<title>Industrial Supplier CRM</title>
+    <link rel="stylesheet" href="style.css">
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-<style>
-
-body{
-    font-family:Arial,sans-serif;
-    background:#f5f7fb;
-    padding:20px;
-}
-
-.card{
-    background:white;
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,.1);
-}
-
-input,select{
-    padding:10px;
-    margin:5px;
-}
-
-button{
-    padding:10px 15px;
-    cursor:pointer;
-}
-
-.hidden{
-    display:none;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th,td{
-    border:1px solid #ddd;
-    padding:10px;
-}
-
-</style>
-
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
-
 <body>
 
-<div id="authCard" class="card">
+    <!-- LOGIN -->
+    <div id="authSection" class="card">
 
-<h2>Login / Signup</h2>
+        <h2>Industrial Supplier CRM</h2>
 
-<input
-type="email"
-id="email"
-placeholder="Email">
+        <input
+            type="email"
+            id="email"
+            placeholder="Email">
 
-<input
-type="password"
-id="password"
-placeholder="Password">
+        <input
+            type="password"
+            id="password"
+            placeholder="Password">
 
-<br>
+        <div class="button-row">
+            <button onclick="signUp()">Sign Up</button>
+            <button onclick="signIn()">Login</button>
+        </div>
 
-<button onclick="signUp()">
-Sign Up
-</button>
+    </div>
 
-<button onclick="signIn()">
-Login
-</button>
+    <!-- MAIN APP -->
+    <div id="appSection" class="hidden">
 
-</div>
+        <!-- HEADER -->
+        <div class="header">
 
-<div id="crmArea" class="hidden">
+            <div>
+                <h2>Industrial Supplier CRM</h2>
+                <span id="loggedInUser"></span>
+            </div>
 
-<div class="card">
+            <button onclick="logout()">
+                Logout
+            </button>
 
-<h2>Industrial CRM</h2>
+        </div>
 
-<p id="userEmail"></p>
+        <!-- TABS -->
+        <div class="tabs">
 
-<button onclick="logout()">
-Logout
-</button>
+            <button
+                class="tab-button"
+                onclick="showTab('dashboardTab')">
 
-</div>
+                Dashboard
+            </button>
 
-<div class="card">
+            <button
+                class="tab-button"
+                onclick="showTab('leadsTab')">
 
-<h3>Add Lead</h3>
+                Leads
+            </button>
 
-<input
-id="company"
-placeholder="Company">
+            <button
+                id="usersTabButton"
+                class="tab-button hidden"
+                onclick="showTab('usersTab')">
 
-<input
-id="contact"
-placeholder="Contact">
+                Users
+            </button>
 
-<input
-id="phone"
-placeholder="Phone">
+            <button
+                id="teamTabButton"
+                class="tab-button hidden"
+                onclick="showTab('teamTab')">
 
-<select id="stage">
+                Team
+            </button>
 
-<option>New Lead</option>
-<option>Contacted</option>
-<option>Quotation Sent</option>
-<option>Won</option>
-<option>Lost</option>
+        </div>
 
-</select>
+        <!-- DASHBOARD -->
+        <div
+            id="dashboardTab"
+            class="tab-content card">
 
-<button onclick="addLead()">
-Save Lead
-</button>
+            <h3>Dashboard</h3>
 
-</div>
+            <div class="stats-grid">
 
-<div class="card">
+                <div class="stat-box">
+                    <h4>Total Leads</h4>
+                    <span id="totalLeads">0</span>
+                </div>
 
-<h3>Leads</h3>
+                <div class="stat-box">
+                    <h4>New Leads</h4>
+                    <span id="newLeads">0</span>
+                </div>
 
-<table>
+                <div class="stat-box">
+                    <h4>Won Leads</h4>
+                    <span id="wonLeads">0</span>
+                </div>
 
-<thead>
+                <div class="stat-box">
+                    <h4>Lost Leads</h4>
+                    <span id="lostLeads">0</span>
+                </div>
 
-<tr>
-<th>Company</th>
-<th>Contact</th>
-<th>Phone</th>
-<th>Stage</th>
-</tr>
+            </div>
 
-</thead>
+        </div>
 
-<tbody id="tbody">
+        <!-- LEADS -->
+        <div
+            id="leadsTab"
+            class="tab-content card hidden">
 
-</tbody>
+            <h3>Lead Management</h3>
 
-</table>
+            <div class="form-grid">
 
-</div>
+                <input
+                    id="company"
+                    placeholder="Company Name">
 
-</div>
+                <input
+                    id="contact"
+                    placeholder="Contact Person">
 
-<script>
+                <input
+                    id="phone"
+                    placeholder="Phone Number">
 
-/**************************************************
-SUPABASE
-**************************************************/
+                <select id="stage">
 
-const supabaseUrl =
-"https://fakvnhividjbqvjkalty.supabase.co";
+                    <option value="New Lead">
+                        New Lead
+                    </option>
 
-const supabaseKey =
-"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZha3ZuaGl2aWRqYnF2amthbHR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NzM3NDAsImV4cCI6MjA5ODE0OTc0MH0.-IEpWTktiHY-mBhPUHB70XKQST3syyUnD4t8YfyOXyg";
+                    <option value="Contacted">
+                        Contacted
+                    </option>
 
-const supabaseClient =
-window.supabase.createClient(
-    supabaseUrl,
-    supabaseKey
-);
+                    <option value="Quotation Sent">
+                        Quotation Sent
+                    </option>
 
-console.log("Supabase initialized");
+                    <option value="Won">
+                        Won
+                    </option>
 
-/**************************************************
-SIGNUP
-**************************************************/
+                    <option value="Lost">
+                        Lost
+                    </option>
 
-async function signUp(){
+                </select>
 
-try{
+                <select id="assignUser">
+                    <option value="">
+                        Assign User
+                    </option>
+                </select>
 
-const email =
-document.getElementById("email").value;
+            </div>
 
-const password =
-document.getElementById("password").value;
+            <button onclick="addLead()">
+                Save Lead
+            </button>
 
-const { data,error } =
-await supabaseClient.auth.signUp({
-email,
-password
-});
+            <hr>
 
-if(error){
+            <table>
 
-alert(error.message);
-return;
+                <thead>
 
-}
+                    <tr>
 
-if(data.user){
+                        <th>Company</th>
+                        <th>Contact</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Assigned To</th>
+                        <th>Actions</th>
 
-await supabaseClient
-.from("profiles")
-.upsert([
-{
-id:data.user.id,
-email:data.user.email,
-role:"user"
-}
-]);
+                    </tr>
 
-}
+                </thead>
 
-alert(
-"Signup successful"
-);
+                <tbody id="leadsTableBody">
 
-}catch(err){
+                </tbody>
 
-console.error(err);
+            </table>
 
-alert(err.message);
+        </div>
 
-}
+        <!-- USERS -->
+        <div
+            id="usersTab"
+            class="tab-content card hidden">
 
-}
+            <h3>User Management</h3>
 
-/**************************************************
-LOGIN
-**************************************************/
+            <table>
 
-async function signIn(){
+                <thead>
 
-const email =
-document.getElementById("email").value;
+                    <tr>
 
-const password =
-document.getElementById("password").value;
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Manager</th>
+                        <th>Save</th>
 
-const { error } =
-await supabaseClient
-.auth
-.signInWithPassword({
+                    </tr>
 
-email,
-password
+                </thead>
 
-});
+                <tbody id="usersTableBody">
 
-if(error){
+                </tbody>
 
-alert(error.message);
-return;
+            </table>
 
-}
+        </div>
 
-checkSession();
+        <!-- TEAM -->
+        <div
+            id="teamTab"
+            class="tab-content card hidden">
 
-}
+            <h3>My Team</h3>
 
-/**************************************************
-LOGOUT
-**************************************************/
+            <table>
 
-async function logout(){
+                <thead>
 
-await supabaseClient.auth.signOut();
+                    <tr>
 
-location.reload();
+                        <th>Email</th>
+                        <th>Role</th>
 
-}
+                    </tr>
 
-/**************************************************
-SESSION
-**************************************************/
+                </thead>
 
-async function checkSession(){
+                <tbody id="teamTableBody">
 
-const {
-data:{session}
-}
-=
-await supabaseClient
-.auth
-.getSession();
+                </tbody>
 
-if(session){
+            </table>
 
-document
-.getElementById("authCard")
-.classList
-.add("hidden");
+        </div>
 
-document
-.getElementById("crmArea")
-.classList
-.remove("hidden");
+    </div>
 
-document
-.getElementById("userEmail")
-.innerHTML =
-session.user.email;
-
-loadLeads();
-
-}
-
-}
-
-/**************************************************
-LOAD LEADS
-**************************************************/
-
-async function loadLeads(){
-
-const {
-data:{user}
-}
-=
-await supabaseClient
-.auth
-.getUser();
-
-const {
-data,
-error
-}
-=
-await supabaseClient
-.from("leads")
-.select("*")
-.eq("owner_id",user.id);
-
-if(error){
-
-console.error(error);
-return;
-
-}
-
-render(data);
-
-}
-
-/**************************************************
-RENDER
-**************************************************/
-
-function render(leads){
-
-const tbody =
-document.getElementById(
-"tbody"
-);
-
-tbody.innerHTML = "";
-
-leads.forEach(l=>{
-
-tbody.innerHTML += `
-<tr>
-<td>${l.company||''}</td>
-<td>${l.contact||''}</td>
-<td>${l.phone||''}</td>
-<td>${l.stage||''}</td>
-</tr>
-`;
-
-});
-
-}
-
-/**************************************************
-ADD LEAD
-**************************************************/
-
-async function addLead(){
-
-const company =
-document.getElementById(
-"company"
-).value;
-
-const contact =
-document.getElementById(
-"contact"
-).value;
-
-const phone =
-document.getElementById(
-"phone"
-).value;
-
-const stage =
-document.getElementById(
-"stage"
-).value;
-
-const {
-data:{user}
-}
-=
-await supabaseClient
-.auth
-.getUser();
-
-const { error }
-=
-await supabaseClient
-.from("leads")
-.insert([
-{
-company,
-contact,
-phone,
-stage,
-owner_id:user.id
-}
-]);
-
-if(error){
-
-alert(error.message);
-return;
-
-}
-
-loadLeads();
-
-}
-
-/**************************************************
-START
-**************************************************/
-
-checkSession();
-
-</script>
+    <script src="app.js"></script>
 
 </body>
 </html>

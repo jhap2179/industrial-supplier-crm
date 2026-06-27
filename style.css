@@ -1,0 +1,282 @@
+/* ==========================
+   GLOBAL
+========================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f4f7fb;
+    color:#333;
+    padding:20px;
+}
+
+.hidden{
+    display:none;
+}
+
+/* ==========================
+   CARDS
+========================== */
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+    margin-bottom:20px;
+}
+
+/* ==========================
+   LOGIN
+========================== */
+
+#authSection{
+    max-width:500px;
+    margin:60px auto;
+}
+
+#authSection h2{
+    margin-bottom:20px;
+}
+
+#authSection input{
+    width:100%;
+    margin-bottom:12px;
+}
+
+/* ==========================
+   HEADER
+========================== */
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.header h2{
+    margin-bottom:5px;
+}
+
+#loggedInUser{
+    color:#666;
+    font-size:14px;
+}
+
+/* ==========================
+   BUTTONS
+========================== */
+
+button{
+    background:#4f46e5;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+.button-row{
+    display:flex;
+    gap:10px;
+}
+
+.delete-btn{
+    background:#dc2626;
+}
+
+.save-btn{
+    background:#16a34a;
+}
+
+/* ==========================
+   INPUTS
+========================== */
+
+input,
+select{
+    width:100%;
+    padding:10px;
+    border:1px solid #dcdcdc;
+    border-radius:6px;
+    margin-bottom:10px;
+    background:white;
+}
+
+input:focus,
+select:focus{
+    outline:none;
+    border-color:#4f46e5;
+}
+
+/* ==========================
+   TABS
+========================== */
+
+.tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.tab-button{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.tab-button:hover{
+    background:#d1d5db;
+}
+
+.tab-content{
+    animation:fadeIn .2s ease-in-out;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+    }
+    to{
+        opacity:1;
+    }
+}
+
+/* ==========================
+   DASHBOARD
+========================== */
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+}
+
+.stat-box{
+    background:#f9fafb;
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    padding:20px;
+    text-align:center;
+}
+
+.stat-box h4{
+    margin-bottom:10px;
+    color:#555;
+}
+
+.stat-box span{
+    font-size:28px;
+    font-weight:bold;
+    color:#4f46e5;
+}
+
+/* ==========================
+   FORMS
+========================== */
+
+.form-grid{
+    display:grid;
+    grid-template-columns:
+        repeat(auto-fit,minmax(220px,1fr));
+    gap:10px;
+    margin-bottom:15px;
+}
+
+/* ==========================
+   TABLES
+========================== */
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+    background:white;
+}
+
+thead{
+    background:#f3f4f6;
+}
+
+th{
+    text-align:left;
+    padding:12px;
+    border-bottom:1px solid #ddd;
+}
+
+td{
+    padding:12px;
+    border-bottom:1px solid #eee;
+}
+
+tr:hover{
+    background:#fafafa;
+}
+
+/* ==========================
+   ROLE BADGES
+========================== */
+
+.role-admin{
+    color:white;
+    background:#dc2626;
+    padding:4px 8px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+.role-manager{
+    color:white;
+    background:#2563eb;
+    padding:4px 8px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+.role-user{
+    color:white;
+    background:#16a34a;
+    padding:4px 8px;
+    border-radius:20px;
+    font-size:12px;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
+
+@media(max-width:768px){
+
+    body{
+        padding:10px;
+    }
+
+    .header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:10px;
+    }
+
+    .tabs{
+        flex-direction:column;
+    }
+
+    table{
+        display:block;
+        overflow-x:auto;
+        white-space:nowrap;
+    }
+
+}
