@@ -346,32 +346,50 @@ async function addLead(){
 
 async function loadLeads(){
 
-    let query =
-    supabaseClient
-    .from("leads")
-    .select("*");
+    let leads = [];
 
-    if(currentRole === "user"){
+    if(currentRole === "admin"){
 
-        query =
-        query.eq(
-            "assigned_to",
-            currentUser.id
-        );
+        const { data } =
+            await supabaseClient
+                .from("leads")
+                .select("*");
+
+        leads = data || [];
     }
 
-    const {
-        data,
-        error
-    } =
-    await query;
+    else if(currentRole === "sales_manager"){
 
-    if(error){
-        console.error(error);
-        return;
+        const { data: team } =
+            await supabaseClient
+                .from("profiles")
+                .select("id")
+                .eq("manager_id", currentUser.id);
+
+        const ids = (team || []).map(x => x.id);
+        ids.push(currentUser.id);
+
+        const { data } =
+            await supabaseClient
+                .from("leads")
+                .select("*")
+                .in("assigned_to", ids);
+
+        leads = data || [];
     }
 
-    renderLeads(data);
+    else {
+
+        const { data } =
+            await supabaseClient
+                .from("leads")
+                .select("*")
+                .eq("assigned_to", currentUser.id);
+
+        leads = data || [];
+    }
+
+    await renderLeads(leads);
 }
 
 /*************************************************
@@ -533,7 +551,7 @@ async function loadUsers(){
 
                 <button
                  class="save-btn"
-                 onclick="saveRole('${user.id}')">
+                 onclick="saveUser('${user.id}')">
 
                     Save
 
@@ -548,7 +566,7 @@ async function loadUsers(){
 
 }
 
-async function saveRole(userId){
+async function saveUser(userId){
 
     const role =
     document.getElementById(
